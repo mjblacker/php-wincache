@@ -62,31 +62,31 @@ ZEND_BEGIN_MODULE_GLOBALS(wincache)
     unsigned int             fcchkfreq;   /* File change check frequency in seconds */
     unsigned int             ttlmax;      /* Seconds a cache entry can stay dormant */
                                           /* Pointer to the original rmdir function */
-    void                    (*orig_rmdir)(INTERNAL_FUNCTION_PARAMETERS);
+    zif_handler              orig_rmdir;
                                           /* Pointer to the original file_exists function */
-    void                    (*orig_file_exists)(INTERNAL_FUNCTION_PARAMETERS);
+    zif_handler              orig_file_exists;
                                           /* Pointer to the original file_get_contents function */
-    void                    (*orig_file_get_contents)(INTERNAL_FUNCTION_PARAMETERS);
+    zif_handler              orig_file_get_contents;
                                           /* Pointer to the original filesize function */
-    void                    (*orig_filesize)(INTERNAL_FUNCTION_PARAMETERS);
+    zif_handler              orig_filesize;
                                           /* Pointer to the original is_dir function */
-    void                    (*orig_is_dir)(INTERNAL_FUNCTION_PARAMETERS);
+    zif_handler              orig_is_dir;
                                           /* Pointer to the original is_file function */
-    void                    (*orig_is_file)(INTERNAL_FUNCTION_PARAMETERS);
+    zif_handler              orig_is_file;
                                           /* Pointer to the original is_readable function */
-    void                    (*orig_is_readable)(INTERNAL_FUNCTION_PARAMETERS);
+    zif_handler              orig_is_readable;
                                           /* Pointer to the original is_writable function */
-    void                    (*orig_is_writable)(INTERNAL_FUNCTION_PARAMETERS);
+    zif_handler              orig_is_writable;
                                           /* Pointer to the original is_writeable function */
-    void                    (*orig_is_writeable)(INTERNAL_FUNCTION_PARAMETERS);
+    zif_handler              orig_is_writeable;
                                           /* Pointer to the original readfile function */
-    void                    (*orig_readfile)(INTERNAL_FUNCTION_PARAMETERS);
+    zif_handler              orig_readfile;
                                           /* Pointer to the original realpath function */
-    void                    (*orig_realpath)(INTERNAL_FUNCTION_PARAMETERS);
+    zif_handler              orig_realpath;
                                           /* Pointer to the original unlink function */
-    void                    (*orig_unlink)(INTERNAL_FUNCTION_PARAMETERS);
+    zif_handler              orig_unlink;
                                           /* Pointer to the original rename function */
-    void                    (*orig_rename)(INTERNAL_FUNCTION_PARAMETERS);
+    zif_handler              orig_rename;
     zend_bool                enablecli;   /* Enable wincache for command line sapi */
     zend_bool                fcenabled;   /* File cache enabled or disabled */
     unsigned int             fcachesize;  /* File cache size in MBs */

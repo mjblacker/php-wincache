@@ -73,17 +73,17 @@ PHP_FUNCTION(wincache_lock);
 PHP_FUNCTION(wincache_unlock);
 
 /* Wrapper functions for standard PHP functions */
-static void wincache_file_exists(INTERNAL_FUNCTION_PARAMETERS);
-static void wincache_file_get_contents(INTERNAL_FUNCTION_PARAMETERS);
-static void wincache_filesize(INTERNAL_FUNCTION_PARAMETERS);
-static void wincache_is_dir(INTERNAL_FUNCTION_PARAMETERS);
-static void wincache_is_file(INTERNAL_FUNCTION_PARAMETERS);
-static void wincache_is_readable(INTERNAL_FUNCTION_PARAMETERS);
-static void wincache_is_writable(INTERNAL_FUNCTION_PARAMETERS);
-static void wincache_readfile(INTERNAL_FUNCTION_PARAMETERS);
-static void wincache_realpath(INTERNAL_FUNCTION_PARAMETERS);
-static void wincache_unlink(INTERNAL_FUNCTION_PARAMETERS);
-static void wincache_rename(INTERNAL_FUNCTION_PARAMETERS);
+static ZEND_NAMED_FUNCTION(wincache_file_exists);
+static ZEND_NAMED_FUNCTION(wincache_file_get_contents);
+static ZEND_NAMED_FUNCTION(wincache_filesize);
+static ZEND_NAMED_FUNCTION(wincache_is_dir);
+static ZEND_NAMED_FUNCTION(wincache_is_file);
+static ZEND_NAMED_FUNCTION(wincache_is_readable);
+static ZEND_NAMED_FUNCTION(wincache_is_writable);
+static ZEND_NAMED_FUNCTION(wincache_readfile);
+static ZEND_NAMED_FUNCTION(wincache_realpath);
+static ZEND_NAMED_FUNCTION(wincache_unlink);
+static ZEND_NAMED_FUNCTION(wincache_rename);
 
 #ifdef WINCACHE_TEST
 PHP_FUNCTION(wincache_ucache_lasterror);
@@ -1373,7 +1373,7 @@ Finished:
     RETURN_TRUE;
 }
 
-static void wincache_file_exists(INTERNAL_FUNCTION_PARAMETERS)
+static ZEND_NAMED_FUNCTION(wincache_file_exists)
 {
     int            result   = NONFATAL;
     char *         filename = NULL;
@@ -1436,7 +1436,7 @@ Finished:
 }
 
 /* file_get_contents implemented in ext\standard\file.c */
-static void wincache_file_get_contents(INTERNAL_FUNCTION_PARAMETERS)
+static ZEND_NAMED_FUNCTION(wincache_file_get_contents)
 {
     int            result           = NONFATAL;
     char *         filename         = NULL;
@@ -1533,7 +1533,7 @@ Finished:
     return;
 }
 
-static void wincache_filesize(INTERNAL_FUNCTION_PARAMETERS)
+static ZEND_NAMED_FUNCTION(wincache_filesize)
 {
     int            result       = NONFATAL;
     char *         filename     = NULL;
@@ -1604,7 +1604,7 @@ Finished:
 }
 
 /* readfile implemented in ext\standard\file.c */
-static void wincache_readfile(INTERNAL_FUNCTION_PARAMETERS)
+static ZEND_NAMED_FUNCTION(wincache_readfile)
 {
     int            result       = NONFATAL;
     char *         filename     = NULL;
@@ -1684,7 +1684,7 @@ Finished:
 }
 
 /* is_readable implemented in tsrm\tsrm_win32.c */
-static void wincache_is_readable(INTERNAL_FUNCTION_PARAMETERS)
+static ZEND_NAMED_FUNCTION(wincache_is_readable)
 {
     int             result           = NONFATAL;
     char *          filename         = NULL;
@@ -1839,8 +1839,8 @@ Finished:
  * In any* case, we have to hook *both* of them.  To facilitate this, we create
  * a function pointer variable.
  */
-static void (*wincache_is_writeable)(INTERNAL_FUNCTION_PARAMETERS) = wincache_is_writable;
-static void wincache_is_writable(INTERNAL_FUNCTION_PARAMETERS)
+static zif_handler wincache_is_writeable = wincache_is_writable;
+static ZEND_NAMED_FUNCTION(wincache_is_writable)
 {
     int             result           = NONFATAL;
     char *          filename         = NULL;
@@ -1991,7 +1991,7 @@ Finished:
 }
 
 /* is_file implemented in ext\standard\file.c */
-static void wincache_is_file(INTERNAL_FUNCTION_PARAMETERS)
+static ZEND_NAMED_FUNCTION(wincache_is_file)
 {
     int            result       = NONFATAL;
     char *         filename     = NULL;
@@ -2070,7 +2070,7 @@ Finished:
 }
 
 /* is_dir implemented in ext\standard\file.c */
-static void wincache_is_dir(INTERNAL_FUNCTION_PARAMETERS)
+static ZEND_NAMED_FUNCTION(wincache_is_dir)
 {
     int            result       = NONFATAL;
     char *         filename     = NULL;
@@ -2250,7 +2250,7 @@ Finished:
 }
 
 /* file_get_contents implemented in tsrm\tsrm_win32.c */
-static void wincache_realpath(INTERNAL_FUNCTION_PARAMETERS)
+static ZEND_NAMED_FUNCTION(wincache_realpath)
 {
     int            result        = NONFATAL;
     char *         filename      = NULL;
@@ -2314,7 +2314,7 @@ Finished:
     return;
 }
 
-static void wincache_unlink(INTERNAL_FUNCTION_PARAMETERS)
+static ZEND_NAMED_FUNCTION(wincache_unlink)
 {
     int            result        = NONFATAL;
     char *         filename      = NULL;
@@ -2415,7 +2415,7 @@ Finished:
     dprintverbose("end wincache_unlink");
 }
 
-static void wincache_rename(INTERNAL_FUNCTION_PARAMETERS)
+static ZEND_NAMED_FUNCTION(wincache_rename)
 {
     int            result        = NONFATAL;
     char *         srcname       = NULL;

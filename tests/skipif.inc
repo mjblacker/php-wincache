@@ -2,7 +2,7 @@
 
     if (!extension_loaded("wincache"))
     {
-        die("Skipped: filter extension required.");
+        die("Skipped: wincache extension required.");
     }
 
 ?>

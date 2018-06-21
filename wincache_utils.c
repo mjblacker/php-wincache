@@ -1308,7 +1308,6 @@ const char * utils_get_typename(zend_uchar type)
         case IS_REFERENCE:
             valuetype = "reference";
             break;
-        case IS_CONSTANT:
         case IS_CONSTANT_AST:
             valuetype = "constant";
             break;

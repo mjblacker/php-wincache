@@ -211,7 +211,6 @@ static int copyin_zval(zvcache_context * pcache, zvcopy_context * pcopy, HashTab
             break;
 
         case IS_STRING:
-        case IS_CONSTANT:
             result = copyin_string(pcopy, phtable, Z_STR_P(poriginal), &pzstr);
             if (FAILED(result))
             {
@@ -219,11 +218,7 @@ static int copyin_zval(zvcache_context * pcache, zvcopy_context * pcopy, HashTab
             }
 
             /* Fix up the zval type flags */
-            if (Z_TYPE_P(poriginal) == IS_STRING) {
-                Z_TYPE_FLAGS_P(pnewzv) |= (IS_TYPE_REFCOUNTED | IS_TYPE_COPYABLE);
-            } else {
-                Z_TYPE_FLAGS_P(pnewzv) |= (IS_TYPE_CONSTANT | IS_TYPE_REFCOUNTED | IS_TYPE_COPYABLE);
-            }
+            Z_TYPE_FLAGS_P(pnewzv) |= (IS_TYPE_REFCOUNTED);
 
             /* Use offset in cached zval pointer */
             Z_STR_P(pnewzv) = (zend_string *)ZOFFSET(pcopy, pzstr);
@@ -480,7 +475,7 @@ static int copyout_zval(zvcache_context * pcache, zvcopy_context * pcopy, HashTa
             break;
 
         case IS_STRING:
-        case IS_CONSTANT:
+        case IS_CONSTANT_AST:
             /* create a new, non-persistent string from the cached copy */
             ptmp_str = (zend_string *)ZVALUE(pcache->incopy, (size_t)Z_STR_P(pcached));
             Z_STR_P(pnewzv) = zend_string_alloc(ZSTR_LEN(ptmp_str), 0);
@@ -620,10 +615,10 @@ static int copyin_hashtable(zvcache_context * pcache, zvcopy_context * pcopy, Ha
     pnew_table->pDestructor = NULL;
 
     /* fix up the HashTable flags since we're persisting it */
-    GC_REFCOUNT(pnew_table) = 2;
-    GC_INFO(pnew_table) = 0;
-    GC_FLAGS(pnew_table) &= ~IS_ARRAY_IMMUTABLE;
-    pnew_table->u.flags &= ~HASH_FLAG_PERSISTENT;
+	GC_SET_REFCOUNT(pnew_table,2);
+	GC_REF_SET_INFO(pnew_table,0);
+    GC_DEL_FLAGS(pnew_table, IS_ARRAY_IMMUTABLE);
+    pnew_table->u.flags &= ~IS_ARRAY_PERSISTENT;
 
     /* Uninitalized */
     if (!(pnew_table->u.flags & HASH_FLAG_INITIALIZED)) {
@@ -764,7 +759,7 @@ static int copyout_hashtable(zvcache_context * pcache, zvcopy_context * pcopy, H
     {
         if((pnew_table = zend_hash_index_find_ptr(phtable, (zend_ulong)pcached)) != NULL)
         {
-            ++GC_REFCOUNT(pnew_table);
+			GC_ADDREF(pnew_table);
             *ppcopied = pnew_table;
             goto Finished;
         }
@@ -827,7 +822,7 @@ static int copyout_hashtable(zvcache_context * pcache, zvcopy_context * pcopy, H
             ptmp_str = (zend_string *)ZVALUE(pcache->incopy, (size_t)p->key);
             p->key = zend_string_alloc(ZSTR_LEN(ptmp_str), 0);
             memcpy(ZSTR_VAL(p->key), ZSTR_VAL(ptmp_str), ZSTR_LEN(ptmp_str)+1);
-            ++GC_REFCOUNT(p->key);
+			GC_ADDREF(p->key);
         }
 
         /* copy out the data itself */
@@ -891,7 +886,7 @@ static int copyin_string(zvcopy_context * pcopy, HashTable *phtable, zend_string
     {
         *(((char *)pzstr) + size - 1) = 0;
         zend_string_forget_hash_val(pzstr);
-        GC_FLAGS(pzstr) &= ~(IS_STR_INTERNED | IS_STR_PERMANENT | IS_STR_PERSISTENT);
+        GC_DEL_FLAGS(pzstr,(IS_STR_INTERNED | IS_STR_PERMANENT | IS_STR_PERSISTENT));
     }
 
     *new_string = pzstr;
@@ -925,8 +920,8 @@ static int copyin_reference(zvcache_context * pcache, zvcopy_context * pcopy, Ha
     {
         pnew_zval = &pzref->val;
         result = copyin_zval(pcache, pcopy, phtable, pnew_zval, &pnew_zval);
-        GC_REFCOUNT(pzref) = 2;
-        GC_INFO(pzref) = 0;
+		GC_SET_REFCOUNT(pzref,2);
+		GC_REF_SET_INFO(pzref,0);
     }
 
     *new_ref = pzref;
@@ -954,7 +949,7 @@ static int copyout_reference(zvcache_context * pcache, zvcopy_context * pcopy, H
     {
         if((pzref = zend_hash_index_find_ptr(phtable, (zend_ulong)pcached)) != NULL)
         {
-            ++GC_REFCOUNT(pzref);
+			GC_ADDREF(pzref);
             *ppnew_ref = pzref;
             goto Finished;
         }
@@ -1163,7 +1158,7 @@ static void destroy_zvcache_data(zvcache_context * pcache, zvcache_value * pvalu
                     break;
 
                 case IS_STRING:
-                case IS_CONSTANT:
+                case IS_CONSTANT_AST:
                     ZFREE(pcache->incopy, ZVALUE(pcache->incopy, (size_t)Z_STR_P(pzval)));
                     Z_STR_P(pzval) = NULL;
                     break;

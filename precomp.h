@@ -63,6 +63,7 @@
 #include "zend_smart_str.h"
 #include "ext/session/php_session.h"
 #include "zend_extensions.h"
+#include "zend_portability.h"
 #include "php_open_temporary_file.h"
 
 #include <tlhelp32.h>
