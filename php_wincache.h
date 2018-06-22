@@ -128,6 +128,10 @@ ZEND_TSRMLS_CACHE_EXTERN();
 #define WCG(v) (wincache_globals.v)
 #endif
 
+/* Add in override for the HASH RESET, 7.3 SSE2 optmisations crash extension */
+# define WC_HT_HASH_RESET(ht) \
+	memset(&HT_HASH(ht, (ht)->nTableMask), HT_INVALID_IDX, HT_HASH_SIZE((ht)->nTableMask))
+
 typedef zend_string *(*fn_zend_resolve_path)(const char *filename, int filename_len);
 typedef int (*fn_zend_stream_open_function)(const char * filename, zend_file_handle *handle);
 typedef zend_op_array * (*fn_zend_compile_file)(zend_file_handle *, int);

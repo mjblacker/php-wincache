@@ -293,8 +293,8 @@ static void globals_initialize(zend_wincache_globals * globals)
 #endif
 
     /* Function pointers we will override */
-    original_resolve_path           = zend_resolve_path;
-    original_stream_open_function   = zend_stream_open_function;
+	fn_zend_resolve_path original_resolve_path           = zend_resolve_path;
+	fn_zend_stream_open_function original_stream_open_function   = zend_stream_open_function;
 
     /* Initalize the wincache_globals items, before parsing the INI file */
     WCG(fcenabled)   = 1;    /* File cache enabled by default */

@@ -64,7 +64,7 @@ if (PHP_WINCACHE != "no") {
             ADD_FLAG('LDFLAGS_WINCACHE', '/debug /debugtype:cv,fixup');
             ADD_FLAG('CFLAGS_WINCACHE', '/D WINCACHE_DEBUG');
             ADD_FLAG('CFLAGS_WINCACHE', '/Zi');
-            ADD_FLAG('CFLAGS_WINCACHE', '/WX');
+            /*ADD_FLAG('CFLAGS_WINCACHE', '/WX');*/
         }
 
         ADD_FLAG('DEPS_WINCACHE', configure_module_dirname + '\\wincache_etw.rc');

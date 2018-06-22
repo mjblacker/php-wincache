@@ -40,7 +40,7 @@
 #define PHP_WINCACHE_VERSION_LEN (sizeof(PHP_WINCACHE_VERSION)-1)
 
 /* comment following line for release builds */
- #define WINCACHE_DEBUG 
+/* #define WINCACHE_DEBUG */
 
 #ifdef PHP_WIN32
  #define PHP_WINCACHE_API __declspec(dllexport)

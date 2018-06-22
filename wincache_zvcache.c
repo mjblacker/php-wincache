@@ -475,7 +475,6 @@ static int copyout_zval(zvcache_context * pcache, zvcopy_context * pcopy, HashTa
             break;
 
         case IS_STRING:
-        case IS_CONSTANT_AST:
             /* create a new, non-persistent string from the cached copy */
             ptmp_str = (zend_string *)ZVALUE(pcache->incopy, (size_t)Z_STR_P(pcached));
             Z_STR_P(pnewzv) = zend_string_alloc(ZSTR_LEN(ptmp_str), 0);
@@ -611,22 +610,35 @@ static int copyin_hashtable(zvcache_context * pcache, zvcopy_context * pcopy, Ha
         goto Finished;
     }
 
+	dprintverbose(" copyin_hashtable: allocate hashtable");
+
     /* Clear out the destructor, since we're taking ownership of the table */
     pnew_table->pDestructor = NULL;
 
+	dprintverbose(" copyin_hashtable: clear destructor");
+
     /* fix up the HashTable flags since we're persisting it */
 	GC_SET_REFCOUNT(pnew_table,2);
-	GC_REF_SET_INFO(pnew_table,0);
+	//GC_REF_SET_INFO(pnew_table,0);
+	//GC_INFO_SET_ADDRESS(pnew_table, 0);
     GC_DEL_FLAGS(pnew_table, IS_ARRAY_IMMUTABLE);
     pnew_table->u.flags &= ~IS_ARRAY_PERSISTENT;
+
+	dprintverbose(" copyin_hashtable: GC Flags");
 
     /* Uninitalized */
     if (!(pnew_table->u.flags & HASH_FLAG_INITIALIZED)) {
         HT_SET_DATA_ADDR(pnew_table, 0);
         goto Finished;
     }
+
+	dprintverbose(" copyin_hashtable: Make sure initialized");
+
     /* Packed (a.k.a. simple array) */
     if (pnew_table->u.flags & HASH_FLAG_PACKED) {
+
+		dprintverbose(" copyin_hashtable: packed simple array");
+
         result = copyin_memory(pcopy, phtable, HT_GET_DATA_ADDR(poriginal), HT_USED_SIZE(poriginal), &ptemp, &allocated);
         if (FAILED(result))
         {
@@ -635,10 +647,16 @@ static int copyin_hashtable(zvcache_context * pcache, zvcopy_context * pcopy, Ha
         HT_SET_DATA_ADDR(pnew_table, ptemp);
         ptemp = NULL;
     }
+
+	
+
 #pragma warning( push )
 #pragma warning( disable : 4018 ) /* yeah, we do signed/unsigned comparisons */
     /* Sparsely Populated: Need to compress while copying in */
     else if (poriginal->nNumUsed < -(int32_t)poriginal->nTableMask / 2) {
+
+		dprintverbose(" copyin_hashtable: sparsely populated");
+
         /* compact table */
         Bucket *old_buckets = poriginal->arData;
         int32_t hash_size = -(int32_t)poriginal->nTableMask;
@@ -650,9 +668,10 @@ static int copyin_hashtable(zvcache_context * pcache, zvcopy_context * pcopy, Ha
                 hash_size >>= 1;
             }
         }
+		dprintverbose(" copyin_hashtable: hashsize done");
         pnew_table->nTableMask = -hash_size;
         temp_size = (hash_size * sizeof(uint32_t)) + (poriginal->nNumUsed * sizeof(Bucket));
-        ptemp = ZMALLOC(pcopy, temp_size);
+        ptemp = ZMALLOC(pcopy, temp_size); dprintverbose(" copyin_hashtable: zmalloc ptemp");
         if (!ptemp)
         {
             result = pcopy->oomcode;
@@ -660,10 +679,14 @@ static int copyin_hashtable(zvcache_context * pcache, zvcopy_context * pcopy, Ha
         }
         pcopy->allocsize += temp_size;
 
-        HT_SET_DATA_ADDR(pnew_table, ptemp);
-        ptemp = NULL;
-        HT_HASH_RESET(pnew_table);
+		
+
+        HT_SET_DATA_ADDR(pnew_table, ptemp); dprintverbose(" copyin_hashtable: HT SET DATA ADDR");
+        ptemp = NULL; dprintverbose(" copyin_hashtable: ptemp nulled");
+        WC_HT_HASH_RESET(pnew_table); dprintverbose(" copyin_hashtable: HT Hash Reset");
         memcpy(pnew_table->arData, old_buckets, poriginal->nNumUsed * sizeof(Bucket));
+
+		dprintverbose(" copyin_hashtable: memcpy done");
 
         for (idx = 0; idx < poriginal->nNumUsed; idx++) {
             p = pnew_table->arData + idx;
@@ -681,6 +704,8 @@ static int copyin_hashtable(zvcache_context * pcache, zvcopy_context * pcopy, Ha
         result = copyin_memory(pcopy, phtable, HT_GET_DATA_ADDR(poriginal), HT_USED_SIZE(poriginal), &ptemp, &allocated);
         HT_SET_DATA_ADDR(pnew_table, ptemp);
     }
+
+	dprintverbose(" copyin_hashtable: copyin memory done");
 
     /* Copy in Keys and Buckets */
     for (idx = 0; idx < poriginal->nNumUsed; idx++) {
@@ -716,6 +741,8 @@ static int copyin_hashtable(zvcache_context * pcache, zvcopy_context * pcopy, Ha
             goto Finished;
         }
     }
+
+	dprintverbose(" copyin_hashtable: for loop keys done");
 
     /* ensure pointer is translated to cache memory offset */
     pnew_table->arData = (Bucket *)ZOFFSET(pcopy, pnew_table->arData);
@@ -921,7 +948,7 @@ static int copyin_reference(zvcache_context * pcache, zvcopy_context * pcopy, Ha
         pnew_zval = &pzref->val;
         result = copyin_zval(pcache, pcopy, phtable, pnew_zval, &pnew_zval);
 		GC_SET_REFCOUNT(pzref,2);
-		GC_REF_SET_INFO(pzref,0);
+		//GC_REF_SET_INFO(pzref,0);
     }
 
     *new_ref = pzref;
