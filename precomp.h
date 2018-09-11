@@ -36,7 +36,8 @@
 #define _PRECOMP_H_
 
 #define PHP_WINCACHE_EXTNAME   "wincache"
-#define PHP_WINCACHE_VERSION    "2.0.0.8"
+#define PHP_WINCACHE_VERSION    "2.0.0.9"
+#define PHP_WINCACHE_COMPATPHP    "7.3 Beta 3"
 #define PHP_WINCACHE_VERSION_LEN (sizeof(PHP_WINCACHE_VERSION)-1)
 
 /* comment following line for release builds */

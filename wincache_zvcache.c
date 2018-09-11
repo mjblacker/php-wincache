@@ -211,6 +211,7 @@ static int copyin_zval(zvcache_context * pcache, zvcopy_context * pcopy, HashTab
             break;
 
         case IS_STRING:
+		case IS_CONSTANT_AST:
             result = copyin_string(pcopy, phtable, Z_STR_P(poriginal), &pzstr);
             if (FAILED(result))
             {
@@ -218,7 +219,12 @@ static int copyin_zval(zvcache_context * pcache, zvcopy_context * pcopy, HashTab
             }
 
             /* Fix up the zval type flags */
-            Z_TYPE_FLAGS_P(pnewzv) |= (IS_TYPE_REFCOUNTED);
+			if (Z_TYPE_P(poriginal) == IS_STRING) {
+				Z_TYPE_FLAGS_P(pnewzv) |= (IS_TYPE_REFCOUNTED);
+			}
+			else {
+				Z_TYPE_FLAGS_P(pnewzv) |= (Z_CONSTANT(poriginal) | IS_TYPE_REFCOUNTED);
+			}
 
             /* Use offset in cached zval pointer */
             Z_STR_P(pnewzv) = (zend_string *)ZOFFSET(pcopy, pzstr);
@@ -475,6 +481,7 @@ static int copyout_zval(zvcache_context * pcache, zvcopy_context * pcopy, HashTa
             break;
 
         case IS_STRING:
+		case IS_CONSTANT_AST:
             /* create a new, non-persistent string from the cached copy */
             ptmp_str = (zend_string *)ZVALUE(pcache->incopy, (size_t)Z_STR_P(pcached));
             Z_STR_P(pnewzv) = zend_string_alloc(ZSTR_LEN(ptmp_str), 0);

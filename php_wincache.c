@@ -293,8 +293,8 @@ static void globals_initialize(zend_wincache_globals * globals)
 #endif
 
     /* Function pointers we will override */
-	fn_zend_resolve_path original_resolve_path           = zend_resolve_path;
-	fn_zend_stream_open_function original_stream_open_function   = zend_stream_open_function;
+	original_resolve_path = zend_resolve_path;
+	original_stream_open_function = zend_stream_open_function;
 
     /* Initalize the wincache_globals items, before parsing the INI file */
     WCG(fcenabled)   = 1;    /* File cache enabled by default */
@@ -873,6 +873,7 @@ PHP_MINFO_FUNCTION(wincache)
     php_info_print_table_row(2, "Version", PHP_WINCACHE_VERSION);
     php_info_print_table_row(2, "Owner", "iisphp@microsoft.com");
     php_info_print_table_row(2, "Build Date", __DATE__ " " __TIME__);
+	php_info_print_table_row(2, "Compatibility", PHP_WINCACHE_COMPATPHP);
 
     php_info_print_table_end();
     DISPLAY_INI_ENTRIES();
